@@ -19,6 +19,8 @@ const GoogleStrategy = require("passport-google-oauth20").Strategy;
 
 const FacebookStrategy = require("passport-facebook").Strategy;
 
+const TwitterStrategy = require("passport-twitter").Strategy;
+
 const findOrCreate = require("mongoose-findorcreate");
 
 
@@ -72,6 +74,7 @@ const userSchema = new mongoose.Schema({
   password: String,
   googleId: String,
   facebookId: String,
+  twitterId:String,
   secret: String
 });
 
@@ -133,6 +136,20 @@ passport.use(new FacebookStrategy({
   }
 ));
 
+passport.use(new TwitterStrategy({
+    consumerKey: process.env.TWITTER_API_KEY,
+    consumerSecret: process.env.TWITTER_API_KEY_SECRET,
+    callbackURL: "https://secrets-appl.herokuapp.com/auth/twitter/secrets"
+  },
+  function(token, tokenSecret, profile, cb) {
+    User.findOrCreate({
+      twitterId: profile.id
+    }, function(err, user) {
+      return cb(err, user);
+    });
+  }
+));
+
 
 
 
@@ -168,6 +185,17 @@ app.get("/auth/facebook/secrets",
   passport.authenticate("facebook", {
     failureRedirect: "/login"
   }),
+  function(req, res) {
+    // Successful authentication, redirect secrets.
+    res.redirect("/secrets");
+  });
+
+// gets for twitter
+app.get("/auth/twitter",
+  passport.authenticate("twitter"));
+
+app.get("/auth/twitter/secrets",
+  passport.authenticate("twitter", { failureRedirect: "/login" }),
   function(req, res) {
     // Successful authentication, redirect secrets.
     res.redirect("/secrets");
