@@ -57,7 +57,7 @@ app.use(passport.session());
 // mongoose.connect("mongodb://localhost:27017/userDB", {
 //   useNewUrlParser: true
 // });
-mongoose.connect("mongodb+srv://bhanu_10:Mickey@cluster0.zub1r.mongodb.net/userDB", {
+mongoose.connect(process.env.MONGODB_ID, {
   useNewUrlParser: true,
 });
 
@@ -105,8 +105,8 @@ passport.deserializeUser(function(id, done) {
 passport.use(new GoogleStrategy({
     clientID: process.env.GOOGLE_CLIENT_ID,
     clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-    callbackURL:"http://localhost:3000/auth/google/secrets",
-    userProfileURL: "https://www.googleapis.com/oauth2/v3/userinfo"
+    callbackURL: "https://secrets-appl.herokuapp.com/auth/google/secrets",
+    userProfileURL: "https://www.googleapis.com/oauth2/v3/userinfo",
   },
   function(accessToken, refreshToken, profile, cb) {
     // console.log(profile);
@@ -122,7 +122,7 @@ passport.use(new GoogleStrategy({
 passport.use(new FacebookStrategy({
     clientID: process.env.FB_APP_ID,
     clientSecret: process.env.FB_APP_SECRET,
-    callbackURL: "http://localhost:3000/auth/facebook/secrets"
+    callbackURL: "https://secrets-appl.herokuapp.com/auth/facebook/secrets",
   },
   function(accessToken, refreshToken, profile, cb) {
     User.findOrCreate({
@@ -160,7 +160,9 @@ app.get("/auth/google/secrets",
 
 // gets for facebook
 app.get("/auth/facebook",
-  passport.authenticate("facebook"));
+  passport.authenticate("facebook",{
+    scope: ["email"]
+  }));
 
 app.get("/auth/facebook/secrets",
   passport.authenticate("facebook", {
@@ -319,6 +321,6 @@ app.post("/submit", function(req, res) {
 
 
 
-app.listen(process.env.PORT||3000, function() {
+app.listen(process.env.PORT || 3000, function() {
   console.log("Server has started Successfully.");
 });
