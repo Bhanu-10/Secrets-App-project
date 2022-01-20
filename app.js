@@ -19,8 +19,6 @@ const GoogleStrategy = require("passport-google-oauth20").Strategy;
 
 const FacebookStrategy = require("passport-facebook").Strategy;
 
-const TwitterStrategy = require("passport-twitter").Strategy;
-
 const findOrCreate = require("mongoose-findorcreate");
 
 
@@ -74,7 +72,6 @@ const userSchema = new mongoose.Schema({
   password: String,
   googleId: String,
   facebookId: String,
-  twitterId:String,
   secret: String
 });
 
@@ -109,7 +106,7 @@ passport.use(new GoogleStrategy({
     clientID: process.env.GOOGLE_CLIENT_ID,
     clientSecret: process.env.GOOGLE_CLIENT_SECRET,
     callbackURL: "https://secrets-appl.herokuapp.com/auth/google/secrets",
-    userProfileURL: "https://www.googleapis.com/oauth2/v3/userinfo",
+    userProfileURL: "https://www.googleapis.com/oauth2/v3/userinfo"
   },
   function(accessToken, refreshToken, profile, cb) {
     // console.log(profile);
@@ -125,7 +122,7 @@ passport.use(new GoogleStrategy({
 passport.use(new FacebookStrategy({
     clientID: process.env.FB_APP_ID,
     clientSecret: process.env.FB_APP_SECRET,
-    callbackURL: "https://secrets-appl.herokuapp.com/auth/facebook/secrets",
+    callbackURL: "https://secrets-appl.herokuapp.com/auth/facebook/secrets"
   },
   function(accessToken, refreshToken, profile, cb) {
     User.findOrCreate({
@@ -135,25 +132,6 @@ passport.use(new FacebookStrategy({
     });
   }
 ));
-
-passport.use(new TwitterStrategy({
-    consumerKey: process.env.TWITTER_API_KEY,
-    consumerSecret: process.env.TWITTER_API_KEY_SECRET,
-    callbackURL: "https://secrets-appl.herokuapp.com/auth/twitter/secrets"
-  },
-  function(token, tokenSecret, profile, cb) {
-    User.findOrCreate({
-      twitterId: profile.id
-    }, function(err, user) {
-      return cb(err, user);
-    });
-  }
-));
-
-
-
-
-
 
 app.get("/", function(req, res) {
   res.render("home");
@@ -189,18 +167,6 @@ app.get("/auth/facebook/secrets",
     // Successful authentication, redirect secrets.
     res.redirect("/secrets");
   });
-
-// gets for twitter
-app.get("/auth/twitter",
-  passport.authenticate("twitter"));
-
-app.get("/auth/twitter/secrets",
-  passport.authenticate("twitter", { failureRedirect: "/login" }),
-  function(req, res) {
-    // Successful authentication, redirect secrets.
-    res.redirect("/secrets");
-  });
-
 
 
 app.get("/register", function(req, res) {
